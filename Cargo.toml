@@ -1,0 +1,12 @@
+[package]
+name = "eXtr8"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+enigo = "0.2.1"
+eframe = {features = [
+    "default",
+    "__screenshot",
+] }
+num-integer = "0.1.46"
