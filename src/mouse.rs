@@ -7,6 +7,12 @@ pub struct Vec2<T> {
     pub(crate) y: T,
 }
 
+impl<T> Vec2<T> {
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
 fn calculate_recursive_bezier(control_points: &[f32], time: &f32) -> f32 {
     let size = control_points.len();
     let mut x = 0f32;
@@ -39,12 +45,12 @@ pub fn move_to(delta: &Vec2<f32>, control_points: &Vec2<Vec<f32>>, duration: &Du
 
         let time_percent = elapsed_time as f32 / duration.as_millis() as f32;
 
-        let delta = Vec2 {
-            x: start_location.0 as f32
-                + delta.x * calculate_recursive_bezier(&control_points.x, &(time_percent)),
-            y: start_location.1 as f32
-                + delta.y * calculate_recursive_bezier(&control_points.y, &(time_percent)),
-        };
+        let delta = Vec2::new(
+            start_location.0 as f32
+                - delta.x * calculate_recursive_bezier(&control_points.x, &(time_percent)),
+            start_location.1 as f32
+                - delta.y * calculate_recursive_bezier(&control_points.y, &(time_percent)),
+        );
 
         enigo
             .move_mouse(

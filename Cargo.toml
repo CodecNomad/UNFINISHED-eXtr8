@@ -10,3 +10,4 @@ eframe = {features = [
     "__screenshot",
 ] }
 num-integer = "0.1.46"
+windows-sys = { version = "0.52.0", features = ["Win32_UI_Input_KeyboardAndMouse"] }

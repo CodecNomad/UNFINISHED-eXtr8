@@ -893,6 +893,7 @@ dependencies = [
  "eframe",
  "enigo",
  "num-integer",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
