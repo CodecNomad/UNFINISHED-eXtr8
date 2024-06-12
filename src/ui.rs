@@ -7,13 +7,13 @@ pub fn init() {
         ..Default::default()
     };
 
-    let mut fps_saver: i8 = 0;
+    let mut sensitivity: f32 = 0.03f32;
 
     eframe::run_simple_native("eXtr8", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal_top(|ui| {
-                ui.heading("FPS saver (%): ");
-                ui.add(egui::Slider::new(&mut fps_saver, 0..=100));
+                ui.heading("Sensitivity: ");
+                ui.add(egui::Slider::new(&mut sensitivity, 0f32..=1f32));
             });
         });
     })

@@ -56,7 +56,7 @@ pub fn init() {
         )];
 
         let acceleration = Vec2::new(vec![0.1, 0.3, 1.0], vec![0.1, 0.3, 1.0]);
-        let sensitivity_multipler = (0.03f32 * 2f32) * 3f32 * (90f32 / 100f32);
+        let sensitivity_multipler = (0.3f32 * 2f32) * 3f32 * (90f32 / 100f32);
         let current_weapon = &weapons[0];
         'inner: for delta in current_weapon.recoil_pattern.iter() {
             unsafe {
