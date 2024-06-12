@@ -1,7 +1,14 @@
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON};
 
-use crate::mouse::{move_to, Vec2};
-use std::{thread, time::Duration};
+use crate::{
+    config::Settings,
+    mouse::{move_to, Vec2},
+};
+use std::{
+    sync::mpsc::{Receiver, Sender},
+    thread,
+    time::Duration,
+};
 
 struct Weapon {
     recoil_pattern: Vec<Vec2<f32>>,
@@ -17,8 +24,8 @@ impl Weapon {
     }
 }
 
-pub fn init() {
-    thread::spawn(|| loop {
+pub fn init(rx: Receiver<Settings>) {
+    thread::spawn(move || {
         let weapons = [Weapon::new(
             vec![
                 Vec2::new(0.000000, -2.257792),
@@ -55,24 +62,31 @@ pub fn init() {
             Duration::from_micros(133330),
         )];
 
-        let acceleration = Vec2::new(vec![0.1, 0.3, 1.0], vec![0.1, 0.3, 1.0]);
-        let sensitivity_multipler = (0.3f32 * 2f32) * 3f32 * (90f32 / 100f32);
         let current_weapon = &weapons[0];
-        'inner: for delta in current_weapon.recoil_pattern.iter() {
-            unsafe {
-                if GetAsyncKeyState(VK_LBUTTON.into()) == 0 {
-                    break 'inner;
-                }
+        let mut settings: Settings = Settings::new(true, 0.03f32);
+        loop {
+            if let Ok(value) = rx.try_recv() {
+                settings = value;
             }
 
-            move_to(
-                &Vec2::new(
-                    -(delta.x / (-0.3 * sensitivity_multipler)),
-                    -(delta.y / (-0.3 * sensitivity_multipler)),
-                ),
-                &acceleration,
-                &current_weapon.delay,
-            );
+            let acceleration = Vec2::new(vec![0.1, 0.3, 1.0], vec![0.1, 0.3, 1.0]);
+            let sensitivity_multipler = (settings.sensitivity * 2f32) * 3f32 * (90f32 / 100f32);
+            'inner: for delta in current_weapon.recoil_pattern.iter() {
+                unsafe {
+                    if GetAsyncKeyState(VK_LBUTTON.into()) == 0 {
+                        break 'inner;
+                    }
+                }
+
+                move_to(
+                    &Vec2::new(
+                        -(delta.x / (-0.3 * sensitivity_multipler)),
+                        -(delta.y / (-0.3 * sensitivity_multipler)),
+                    ),
+                    &acceleration,
+                    &current_weapon.delay,
+                );
+            }
         }
     });
 }

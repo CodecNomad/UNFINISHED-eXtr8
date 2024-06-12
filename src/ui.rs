@@ -1,7 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use std::sync::mpsc::Sender;
+
 use eframe::egui;
 
-pub fn init() {
+use crate::config::Settings;
+
+pub fn init(tx: Sender<Settings>) {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
         ..Default::default()
@@ -13,7 +17,10 @@ pub fn init() {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal_top(|ui| {
                 ui.heading("Sensitivity: ");
-                ui.add(egui::Slider::new(&mut sensitivity, 0f32..=1f32));
+                ui.add(egui::Slider::new(&mut sensitivity, 0.0005f32..=1f32));
+                if ui.add(egui::Button::new("Update settings")).clicked() {
+                    tx.send(Settings::new(true, sensitivity)).unwrap();
+                }
             });
         });
     })
