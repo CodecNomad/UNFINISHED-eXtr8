@@ -7,7 +7,7 @@ use core::ptr::null;
 use windows_sys::s;
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_C, VK_L, VK_LBUTTON};
-use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowA, SetForegroundWindow, ShowWindow};
+use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowA, ShowWindow};
 
 use std::time::SystemTime;
 use std::{sync::mpsc::Receiver, thread, time::Duration};
