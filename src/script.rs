@@ -1,29 +1,13 @@
-use windows_sys::Win32::System::Diagnostics::Debug::Beep;
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_L, VK_LBUTTON};
-
-use crate::config::WeaponID;
+use crate::config::{BarrellID, SightID, Weapon, WeaponID};
 use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
 };
+use windows_sys::Win32::System::Diagnostics::Debug::Beep;
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_L, VK_LBUTTON};
+
 use std::time::SystemTime;
 use std::{sync::mpsc::Receiver, thread, time::Duration};
-
-struct Weapon {
-    recoil_pattern: Vec<Vec2<f32>>,
-    delay: Duration,
-    id: WeaponID,
-}
-
-impl Weapon {
-    fn new(recoil_pattern: Vec<Vec2<f32>>, delay: Duration, id: WeaponID) -> Self {
-        Self {
-            recoil_pattern,
-            delay,
-            id,
-        }
-    }
-}
 
 pub fn init(rx: Receiver<Settings>) {
     thread::spawn(move || {
@@ -360,7 +344,12 @@ pub fn init(rx: Receiver<Settings>) {
         ];
 
         let mut enabled = false;
-        let mut settings: Settings = Settings::new(0.3f32, crate::config::WeaponID::Ak47);
+        let mut settings: Settings = Settings::new(
+            0.3f32,
+            crate::config::WeaponID::Ak47,
+            SightID::None,
+            BarrellID::None,
+        );
         let mut current_weapon = &weapons[0];
         let mut last_press = SystemTime::now();
 
@@ -382,7 +371,7 @@ pub fn init(rx: Receiver<Settings>) {
             if let Ok(value) = rx.try_recv() {
                 settings = value;
                 weapons.iter().enumerate().for_each(|(i, weapon)| {
-                    if weapon.id == settings.weapon {
+                    if weapon.weapon_id == settings.weapon {
                         current_weapon = &weapons[i];
                     }
                 });
@@ -398,10 +387,15 @@ pub fn init(rx: Receiver<Settings>) {
                     }
                 }
 
+                let barrell_multiplier = settings.barrell.get_modifier();
+                let sight_multiplier = settings.sight.get_modifier();
+
                 move_to(
                     &Vec2::new(
-                        -(delta.x / (-0.3 * sensitivity_multipler)),
-                        -(delta.y / (-0.3 * sensitivity_multipler)),
+                        -(delta.x * sight_multiplier * barrell_multiplier
+                            / (-0.3 * sensitivity_multipler)),
+                        -(delta.y * sight_multiplier * barrell_multiplier
+                            / (-0.3 * sensitivity_multipler)),
                     ),
                     &acceleration,
                     &current_weapon.delay,

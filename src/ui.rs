@@ -1,9 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use std::sync::mpsc::Sender;
 
-use eframe::egui::{self, Id};
+use eframe::egui::{self};
 
-use crate::config::{Settings, WeaponID};
+use crate::config::{BarrellID, Settings, SightID, WeaponID};
 
 pub fn init(tx: Sender<Settings>) {
     let options = eframe::NativeOptions {
@@ -13,6 +13,8 @@ pub fn init(tx: Sender<Settings>) {
 
     let mut sensitivity: f32 = 0.3f32;
     let mut weapon: WeaponID = WeaponID::Ak47;
+    let mut sight: SightID = SightID::None;
+    let mut barrell: BarrellID = BarrellID::None;
 
     eframe::run_simple_native("eXtr8", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -38,8 +40,31 @@ pub fn init(tx: Sender<Settings>) {
                     });
             });
 
+            ui.horizontal_top(|ui| {
+                ui.heading("Sight: ");
+                egui::ComboBox::new("sight_selector", "")
+                    .selected_text(format!("{:?}", &sight))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut sight, SightID::None, "None");
+                        ui.selectable_value(&mut sight, SightID::Handmade, "Handmade");
+                        ui.selectable_value(&mut sight, SightID::Holo, "Holo");
+                        ui.selectable_value(&mut sight, SightID::X8, "X8");
+                    });
+            });
+
+            ui.horizontal_top(|ui| {
+                ui.heading("Barrell: ");
+                egui::ComboBox::new("barrell_selector", "")
+                    .selected_text(format!("{:?}", &barrell))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut barrell, BarrellID::None, "None");
+                        ui.selectable_value(&mut barrell, BarrellID::Silencer, "Silencer 🍑💦");
+                    });
+            });
+
             if ui.add(egui::Button::new("Update settings")).clicked() {
-                tx.send(Settings::new(sensitivity, weapon)).unwrap();
+                tx.send(Settings::new(sensitivity, weapon, sight, barrell))
+                    .unwrap();
             }
         });
     })
