@@ -369,8 +369,7 @@ pub fn init(rx: Receiver<Settings>) {
                     let hwnd = FindWindowA(null(), s!("eXtr8"));
 
                     if focused {
-                        ShowWindow(hwnd, 9);
-                        SetForegroundWindow(hwnd);
+                        ShowWindow(hwnd, 1);
                     } else {
                         ShowWindow(hwnd, 0);
                     }
