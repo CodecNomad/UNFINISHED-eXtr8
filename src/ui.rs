@@ -1,4 +1,4 @@
-use std::sync::mpsc::Sender;
+use std::{panic, sync::mpsc::Sender};
 
 use eframe::egui::{self};
 
@@ -6,7 +6,10 @@ use crate::config::{BarrellID, Settings, SightID, WeaponID};
 
 pub fn init(tx: Sender<Settings>) {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([320.0, 240.0])
+            .with_decorations(false)
+            .with_resizable(false),
         ..Default::default()
     };
 
@@ -61,10 +64,16 @@ pub fn init(tx: Sender<Settings>) {
                     });
             });
 
-            if ui.add(egui::Button::new("Update settings")).clicked() {
-                tx.send(Settings::new(sensitivity, weapon, sight, barrell))
-                    .unwrap();
-            }
+            ui.horizontal_top(|ui| {
+                if ui.add(egui::Button::new("Update settings")).clicked() {
+                    tx.send(Settings::new(sensitivity, weapon, sight, barrell))
+                        .unwrap();
+                }
+
+                if ui.add(egui::Button::new("Exit")).clicked() {
+                    panic!("User exit");
+                }
+            });
         });
     })
     .unwrap();
