@@ -60,26 +60,16 @@ pub fn move_to(delta: &Vec2<f32>, control_points: &Vec2<Vec<f32>>, duration: &Du
         );
 
         previous_location = absolute_location;
+        relative_position.x += pixel_loss.x;
+        relative_position.y += pixel_loss.y;
 
-        pixel_loss.x += relative_position.x - relative_position.x.trunc();
-        pixel_loss.y += relative_position.y - relative_position.y.trunc();
-
-        if pixel_loss.x.abs() >= 1f32 {
-            let adjustment = pixel_loss.x.trunc();
-            pixel_loss.x -= adjustment;
-            relative_position.x += adjustment;
-        }
-
-        if pixel_loss.y.abs() >= 1f32 {
-            let adjustment = pixel_loss.y.trunc();
-            pixel_loss.y -= adjustment;
-            relative_position.y += adjustment;
-        }
+        pixel_loss.x = relative_position.x.fract();
+        pixel_loss.y = relative_position.y.fract();
 
         enigo
             .move_mouse(
-                -relative_position.x.trunc() as i32,
-                -relative_position.y.trunc() as i32,
+                -relative_position.x as i32,
+                -relative_position.y as i32,
                 Coordinate::Rel,
             )
             .unwrap();
