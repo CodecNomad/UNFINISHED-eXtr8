@@ -1,6 +1,7 @@
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_L, VK_LBUTTON};
 
+use crate::config::WeaponID;
 use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
@@ -11,13 +12,15 @@ use std::{sync::mpsc::Receiver, thread, time::Duration};
 struct Weapon {
     recoil_pattern: Vec<Vec2<f32>>,
     delay: Duration,
+    id: WeaponID,
 }
 
 impl Weapon {
-    fn new(recoil_pattern: Vec<Vec2<f32>>, delay: Duration) -> Self {
+    fn new(recoil_pattern: Vec<Vec2<f32>>, delay: Duration, id: WeaponID) -> Self {
         Self {
             recoil_pattern,
             delay,
+            id,
         }
     }
 }
@@ -58,11 +61,17 @@ pub fn init(rx: Receiver<Settings>) {
                 Vec2::new(1.553195, -2.248043),
             ],
             Duration::from_micros(133330),
+            WeaponID::Ak47,
         )];
 
-        let current_weapon = &weapons[0];
         let mut enabled = false;
-        let mut settings: Settings = Settings::new(0.3f32);
+        let mut settings: Settings = Settings::new(0.3f32, crate::config::WeaponID::Ak47);
+        let mut current_weapon = &weapons[0];
+        weapons.iter().enumerate().for_each(|(i, weapon)| {
+            if weapon.id == settings.weapon {
+                current_weapon = &weapons[i];
+            }
+        });
         let mut last_press = SystemTime::now();
 
         loop {
