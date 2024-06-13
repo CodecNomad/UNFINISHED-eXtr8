@@ -1,5 +1,5 @@
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F8, VK_L, VK_LBUTTON};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_L, VK_LBUTTON};
 
 use crate::{
     config::Settings,
@@ -61,7 +61,8 @@ pub fn init(rx: Receiver<Settings>) {
         )];
 
         let current_weapon = &weapons[0];
-        let mut settings: Settings = Settings::new(true, 0.3f32);
+        let mut enabled = false;
+        let mut settings: Settings = Settings::new(0.3f32);
         let mut last_press = SystemTime::now();
 
         loop {
@@ -74,7 +75,7 @@ pub fn init(rx: Receiver<Settings>) {
                         > Duration::from_millis(300).as_millis()
                 {
                     Beep(1000, 100);
-                    settings.enabled = !settings.enabled;
+                    enabled = !enabled;
                     last_press = SystemTime::now();
                 }
             }
@@ -88,7 +89,7 @@ pub fn init(rx: Receiver<Settings>) {
                 (settings.sensitivity / 10f32 * 2f32) * 3f32 * (90f32 / 100f32);
             'inner: for delta in current_weapon.recoil_pattern.iter() {
                 unsafe {
-                    if GetAsyncKeyState(VK_LBUTTON.into()) == 0 || !settings.enabled {
+                    if GetAsyncKeyState(VK_LBUTTON.into()) == 0 || !enabled {
                         break 'inner;
                     }
                 }

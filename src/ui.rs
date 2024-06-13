@@ -20,7 +20,7 @@ pub fn init(tx: Sender<Settings>) {
                 ui.add(egui::Slider::new(&mut sensitivity, 0.005f32..=5f32));
             });
             if ui.add(egui::Button::new("Update settings")).clicked() {
-                tx.send(Settings::new(true, sensitivity)).unwrap();
+                tx.send(Settings::new(sensitivity)).unwrap();
             }
         });
     })
