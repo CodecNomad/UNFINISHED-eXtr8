@@ -3,8 +3,11 @@ use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
 };
+use core::ptr::null;
+use windows_sys::s;
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_L, VK_LBUTTON};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_C, VK_L, VK_LBUTTON};
+use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowA, SetForegroundWindow, ShowWindow};
 
 use std::time::SystemTime;
 use std::{sync::mpsc::Receiver, thread, time::Duration};
@@ -352,6 +355,7 @@ pub fn init(rx: Receiver<Settings>) {
         );
         let mut current_weapon = &weapons[0];
         let mut last_press = SystemTime::now();
+        let mut focused = false;
 
         loop {
             unsafe {
@@ -360,7 +364,28 @@ pub fn init(rx: Receiver<Settings>) {
                         .duration_since(last_press)
                         .unwrap()
                         .as_millis()
-                        > Duration::from_millis(300).as_millis()
+                        > Duration::from_millis(250).as_millis()
+                {
+                    let hwnd = FindWindowA(null(), s!("eXtr8"));
+
+                    if focused {
+                        ShowWindow(hwnd, 9);
+                        SetForegroundWindow(hwnd);
+                    } else {
+                        ShowWindow(hwnd, 0);
+                    }
+
+                    Beep(1000, 100);
+                    focused = !focused;
+                    last_press = SystemTime::now();
+                }
+
+                if GetAsyncKeyState(VK_C.into()) != 0
+                    && SystemTime::now()
+                        .duration_since(last_press)
+                        .unwrap()
+                        .as_millis()
+                        > Duration::from_millis(250).as_millis()
                 {
                     Beep(1000, 100);
                     enabled = !enabled;
@@ -377,7 +402,7 @@ pub fn init(rx: Receiver<Settings>) {
                 });
             }
 
-            let acceleration = Vec2::new(vec![0.1, 0.3, 1.0], vec![0.1, 0.3, 1.0]);
+            let acceleration = Vec2::new(vec![0.1, 0.75, 1.0], vec![0.1, 0.75, 1.0]);
             let sensitivity_multipler =
                 (settings.sensitivity / 10f32 * 2f32) * 3f32 * (90f32 / 100f32);
             'inner: for delta in current_weapon.recoil_pattern.iter() {
