@@ -1,14 +1,12 @@
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON};
+use windows_sys::Win32::System::Diagnostics::Debug::Beep;
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F8, VK_L, VK_LBUTTON};
 
 use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
 };
-use std::{
-    sync::mpsc::{Receiver, Sender},
-    thread,
-    time::Duration,
-};
+use std::time::SystemTime;
+use std::{sync::mpsc::Receiver, thread, time::Duration};
 
 struct Weapon {
     recoil_pattern: Vec<Vec2<f32>>,
@@ -63,17 +61,34 @@ pub fn init(rx: Receiver<Settings>) {
         )];
 
         let current_weapon = &weapons[0];
-        let mut settings: Settings = Settings::new(true, 0.03f32);
+        let mut settings: Settings = Settings::new(true, 0.3f32);
+        let mut last_press = SystemTime::now();
+
         loop {
+            unsafe {
+                if GetAsyncKeyState(VK_L.into()) != 0
+                    && SystemTime::now()
+                        .duration_since(last_press)
+                        .unwrap()
+                        .as_millis()
+                        > Duration::from_millis(300).as_millis()
+                {
+                    Beep(1000, 100);
+                    settings.enabled = !settings.enabled;
+                    last_press = SystemTime::now();
+                }
+            }
+
             if let Ok(value) = rx.try_recv() {
                 settings = value;
             }
 
             let acceleration = Vec2::new(vec![0.1, 0.3, 1.0], vec![0.1, 0.3, 1.0]);
-            let sensitivity_multipler = (settings.sensitivity * 2f32) * 3f32 * (90f32 / 100f32);
+            let sensitivity_multipler =
+                (settings.sensitivity / 10f32 * 2f32) * 3f32 * (90f32 / 100f32);
             'inner: for delta in current_weapon.recoil_pattern.iter() {
                 unsafe {
-                    if GetAsyncKeyState(VK_LBUTTON.into()) == 0 {
+                    if GetAsyncKeyState(VK_LBUTTON.into()) == 0 || !settings.enabled {
                         break 'inner;
                     }
                 }

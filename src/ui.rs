@@ -11,17 +11,17 @@ pub fn init(tx: Sender<Settings>) {
         ..Default::default()
     };
 
-    let mut sensitivity: f32 = 0.03f32;
+    let mut sensitivity: f32 = 0.3f32;
 
     eframe::run_simple_native("eXtr8", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal_top(|ui| {
                 ui.heading("Sensitivity: ");
-                ui.add(egui::Slider::new(&mut sensitivity, 0.0005f32..=1f32));
-                if ui.add(egui::Button::new("Update settings")).clicked() {
-                    tx.send(Settings::new(true, sensitivity)).unwrap();
-                }
+                ui.add(egui::Slider::new(&mut sensitivity, 0.005f32..=5f32));
             });
+            if ui.add(egui::Button::new("Update settings")).clicked() {
+                tx.send(Settings::new(true, sensitivity)).unwrap();
+            }
         });
     })
     .unwrap();
