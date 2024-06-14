@@ -4,7 +4,9 @@ use crate::{
     mouse::{move_to, Vec2},
 };
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_C, VK_LBUTTON};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+    GetAsyncKeyState, VK_C, VK_CONTROL, VK_LBUTTON,
+};
 
 use std::time::SystemTime;
 use std::{sync::mpsc::Receiver, thread, time::Duration};
@@ -389,10 +391,8 @@ pub fn init(rx: Receiver<Settings>) {
 
                 let barrell_multiplier = settings.barrell.get_modifier();
                 let sight_multiplier = settings.sight.get_modifier();
-                let stand_multiplier = if unsafe { GetAsyncKeyState(VK_LBUTTON.into()) } != 0 {
-                    2f32
-                } else {
-                    1f32
+                let stand_multiplier = if unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0 {
+                    1f32c
                 };
 
                 move_to(
