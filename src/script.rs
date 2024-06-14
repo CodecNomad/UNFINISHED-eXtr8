@@ -3,11 +3,8 @@ use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
 };
-use core::ptr::null;
-use windows_sys::s;
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_C, VK_L, VK_LBUTTON};
-use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowA, ShowWindow};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_C, VK_LBUTTON};
 
 use std::time::SystemTime;
 use std::{sync::mpsc::Receiver, thread, time::Duration};
@@ -355,30 +352,9 @@ pub fn init(rx: Receiver<Settings>) {
         );
         let mut current_weapon = &weapons[0];
         let mut last_press = SystemTime::now();
-        let mut focused = false;
 
         loop {
             unsafe {
-                if GetAsyncKeyState(VK_L.into()) != 0
-                    && SystemTime::now()
-                        .duration_since(last_press)
-                        .unwrap()
-                        .as_millis()
-                        > Duration::from_millis(250).as_millis()
-                {
-                    let hwnd = FindWindowA(null(), s!("eXtr8"));
-
-                    if focused {
-                        ShowWindow(hwnd, 1);
-                    } else {
-                        ShowWindow(hwnd, 0);
-                    }
-
-                    Beep(1000, 100);
-                    focused = !focused;
-                    last_press = SystemTime::now();
-                }
-
                 if GetAsyncKeyState(VK_C.into()) != 0
                     && SystemTime::now()
                         .duration_since(last_press)
@@ -413,12 +389,17 @@ pub fn init(rx: Receiver<Settings>) {
 
                 let barrell_multiplier = settings.barrell.get_modifier();
                 let sight_multiplier = settings.sight.get_modifier();
+                let stand_multiplier = if unsafe { GetAsyncKeyState(VK_LBUTTON.into()) } != 0 {
+                    2f32
+                } else {
+                    1f32
+                };
 
                 move_to(
                     &Vec2::new(
-                        -(delta.x * sight_multiplier * barrell_multiplier
+                        -(delta.x * sight_multiplier * barrell_multiplier * stand_multiplier
                             / (-0.3 * sensitivity_multipler)),
-                        -(delta.y * sight_multiplier * barrell_multiplier
+                        -(delta.y * sight_multiplier * barrell_multiplier * stand_multiplier
                             / (-0.3 * sensitivity_multipler)),
                     ),
                     &acceleration,

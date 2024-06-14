@@ -8,7 +8,6 @@ pub fn init(tx: Sender<Settings>) {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([320.0, 240.0])
-            .with_decorations(false)
             .with_resizable(false),
         ..Default::default()
     };
