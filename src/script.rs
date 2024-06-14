@@ -392,7 +392,9 @@ pub fn init(rx: Receiver<Settings>) {
                 let barrell_multiplier = settings.barrell.get_modifier();
                 let sight_multiplier = settings.sight.get_modifier();
                 let stand_multiplier = if unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0 {
-                    1f32c
+                    1f32
+                } else {
+                    2f32
                 };
 
                 move_to(
