@@ -5,7 +5,7 @@ use crate::{
 };
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, VK_C, VK_CONTROL, VK_LBUTTON,
+    GetAsyncKeyState, VK_C, VK_CONTROL, VK_LBUTTON, VK_RBUTTON,
 };
 
 use std::time::SystemTime;
@@ -390,18 +390,32 @@ pub fn init(rx: Receiver<Settings>) {
                 }
 
                 let barrell_multiplier = settings.barrell.get_modifier();
-                let sight_multiplier = settings.sight.get_modifier();
+                let mut sight_multiplier = settings.sight.get_modifier();
                 let stand_multiplier = if unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0 {
                     1f32
                 } else {
                     2f32
                 };
+                let hip_modifier = if unsafe { GetAsyncKeyState(VK_RBUTTON.into()) != 0 } {
+                    1f32
+                } else {
+                    sight_multiplier = 1f32;
+                    0.8f32
+                };
 
                 move_to(
                     &Vec2::new(
-                        -(delta.x * sight_multiplier * barrell_multiplier * stand_multiplier
+                        -(delta.x
+                            * sight_multiplier
+                            * barrell_multiplier
+                            * stand_multiplier
+                            * hip_modifier
                             / (-0.3 * sensitivity_multipler)),
-                        -(delta.y * sight_multiplier * barrell_multiplier * stand_multiplier
+                        -(delta.y
+                            * sight_multiplier
+                            * barrell_multiplier
+                            * stand_multiplier
+                            * hip_modifier
                             / (-0.3 * sensitivity_multipler)),
                     ),
                     &acceleration,
