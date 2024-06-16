@@ -1,8 +1,8 @@
-use std::{panic, sync::mpsc::Sender};
+use std::sync::mpsc::Sender;
 
 use eframe::egui::{self};
 
-use crate::config::{BarrellID, Settings, SightID, WeaponID};
+use crate::config::{BarrelID, Settings, SightID, WeaponID};
 
 pub fn init(tx: Sender<Settings>) {
     let options = eframe::NativeOptions {
@@ -15,7 +15,7 @@ pub fn init(tx: Sender<Settings>) {
     let mut sensitivity: f32 = 0.3f32;
     let mut weapon: WeaponID = WeaponID::Ak47;
     let mut sight: SightID = SightID::None;
-    let mut barrell: BarrellID = BarrellID::None;
+    let mut barrell: BarrelID = BarrelID::None;
 
     eframe::run_simple_native("eXtr8", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -58,8 +58,8 @@ pub fn init(tx: Sender<Settings>) {
                 egui::ComboBox::new("barrell_selector", "")
                     .selected_text(format!("{:?}", &barrell))
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut barrell, BarrellID::None, "None");
-                        ui.selectable_value(&mut barrell, BarrellID::Silencer, "Silencer 🍑💦");
+                        ui.selectable_value(&mut barrell, BarrelID::None, "None");
+                        ui.selectable_value(&mut barrell, BarrelID::Silencer, "Silencer");
                     });
             });
 

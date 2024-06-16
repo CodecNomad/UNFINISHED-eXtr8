@@ -3,12 +3,12 @@ use num_integer::binomial;
 use std::time::{Duration, SystemTime};
 
 pub struct Vec2<T> {
-    pub(crate) x: T,
-    pub(crate) y: T,
+    pub x: T,
+    pub y: T,
 }
 
 impl<T> Vec2<T> {
-    pub fn new(x: T, y: T) -> Self {
+    pub const fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
 }
