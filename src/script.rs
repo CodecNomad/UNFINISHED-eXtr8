@@ -3,10 +3,11 @@ use std::{sync::mpsc::Receiver, thread, time::Duration};
 
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, VK_C, VK_CONTROL, VK_LBUTTON, VK_RBUTTON,
+    GetAsyncKeyState, VK_A, VK_C, VK_CONTROL, VK_D, VK_LBUTTON, VK_RBUTTON, VK_S, VK_W,
 };
 
 use crate::config::Weapons;
+use crate::mouse::calculate_recursive_bezier;
 use crate::{
     config::Settings,
     mouse::{move_to, Vec2},
@@ -19,15 +20,17 @@ pub fn init(rx: Receiver<Settings>) {
         let weapons = Weapons::get();
         let mut current_weapon = &weapons[0];
         let mut last_press = SystemTime::now();
+        let mut was_moving = false;
+        let mut start_of_move = SystemTime::now();
 
         loop {
             unsafe {
                 if GetAsyncKeyState(VK_C.into()) != 0
                     && SystemTime::now()
-                    .duration_since(last_press)
-                    .unwrap()
-                    .as_millis()
-                    > Duration::from_millis(250).as_millis()
+                        .duration_since(last_press)
+                        .unwrap()
+                        .as_millis()
+                        > Duration::from_millis(250).as_millis()
                 {
                     Beep(1000, 100);
                     enabled = !enabled;
@@ -55,33 +58,48 @@ pub fn init(rx: Receiver<Settings>) {
                 }
 
                 let barrel_multiplier = settings.barrel.get_modifier();
-                let mut sight_multiplier = settings.sight.get_modifier();
-                let stand_multiplier = if unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0 {
-                    1f64
-                } else {
-                    2f64
-                };
-                let hip_modifier = if unsafe { GetAsyncKeyState(VK_RBUTTON.into()) != 0 } {
-                    1f64
-                } else {
-                    sight_multiplier = 1f64;
-                    current_weapon.ads_scale
-                };
+                let sight_multiplier = settings.sight.get_modifier();
+                let movement_penalty = current_weapon.move_penalty;
+
+                let is_aiming = unsafe { GetAsyncKeyState(VK_RBUTTON.into()) != 0 };
+                let is_crouching = unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0;
+                let is_moving = unsafe { GetAsyncKeyState(VK_W.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_S.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_A.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_D.into()) != 0 };
+
+                if is_moving && was_moving == false {
+                    start_of_move = SystemTime::now()
+                }
+
+                was_moving = is_moving;
+
+                let mut multiplier = 1.0;
+                let mut max_speed = 1.7;
+                if is_aiming {
+                    multiplier *= sight_multiplier;
+                }
+
+                multiplier *= barrel_multiplier;
+
+                if !is_crouching {
+                    multiplier *= 2.0;
+                    max_speed = 2.8;
+                }
+
+                if is_moving {
+                    let vc = calculate_recursive_bezier(
+                        &vec![0f64, max_speed],
+                        &((start_of_move.elapsed().unwrap().as_millis()) as f64),
+                    );
+                    let vt = (vc / 5.5f64).clamp(0.0, 1.0);
+                    multiplier *= 1.0 + vt * movement_penalty;
+                }
 
                 move_to(
                     &Vec2::new(
-                        -(delta.x
-                            * sight_multiplier
-                            * barrel_multiplier
-                            * stand_multiplier
-                            * hip_modifier
-                            / (-0.3 * sensitivity_multiplier)),
-                        -(delta.y
-                            * sight_multiplier
-                            * barrel_multiplier
-                            * stand_multiplier
-                            * hip_modifier
-                            / (-0.3 * sensitivity_multiplier)),
+                        -(delta.x * multiplier / (-0.3 * sensitivity_multiplier)),
+                        -(delta.y * multiplier / (-0.3 * sensitivity_multiplier)),
                     ),
                     &acceleration,
                     &current_weapon.delay,

@@ -14,15 +14,19 @@ impl<T> Vec2<T> {
     }
 }
 
-fn calculate_recursive_bezier(control_points: &[f64], time: &f64) -> f64 {
+pub fn calculate_recursive_bezier(control_points: &[f64], time: &f64) -> f64 {
     let size = control_points.len();
     let delta_time = 1f64 - time;
 
-    control_points.iter().enumerate().map(|(i, val)| {
-        let binom = binomial(size - 1, i);
-        let term = binom as f64 * delta_time.powi((size - 1 - i) as i32) * time.powi(i as i32);
-        term * val
-    }).sum()
+    control_points
+        .iter()
+        .enumerate()
+        .map(|(i, val)| {
+            let binom = binomial(size - 1, i);
+            let term = binom as f64 * delta_time.powi((size - 1 - i) as i32) * time.powi(i as i32);
+            term * val
+        })
+        .sum()
 }
 
 pub fn move_to(delta: &Vec2<f64>, control_points: &Vec2<Vec<f64>>, duration: &Duration) {

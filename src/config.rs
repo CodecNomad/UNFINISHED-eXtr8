@@ -56,7 +56,13 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    pub const fn new(recoil_pattern: Vec<Vec2<f64>>, move_penalty: f64,  ads_scale: f64, delay: Duration, id: WeaponID) -> Self {
+    pub const fn new(
+        recoil_pattern: Vec<Vec2<f64>>,
+        move_penalty: f64,
+        ads_scale: f64,
+        delay: Duration,
+        id: WeaponID,
+    ) -> Self {
         Self {
             recoil_pattern,
             move_penalty,
