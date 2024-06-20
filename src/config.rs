@@ -7,16 +7,14 @@ pub enum SightID {
     None,
     Holo,
     Handmade,
-    X8,
 }
 
 impl SightID {
-    pub const fn get_modifier(&self) -> f32 {
+    pub const fn get_modifier(&self) -> f64 {
         match self {
-            SightID::None => 1f32,
-            SightID::Holo => 1.2f32,
-            SightID::Handmade => 0.8f32,
-            SightID::X8 => 4.76f32,
+            SightID::None => 1f64,
+            SightID::Holo => 1.2f64,
+            SightID::Handmade => 0.8f64,
         }
     }
 }
@@ -28,10 +26,10 @@ pub enum BarrelID {
 }
 
 impl BarrelID {
-    pub const fn get_modifier(&self) -> f32 {
+    pub const fn get_modifier(&self) -> f64 {
         match self {
-            BarrelID::None => 1f32,
-            BarrelID::Silencer => 0.8f32,
+            BarrelID::None => 1f64,
+            BarrelID::Silencer => 0.8f64,
         }
     }
 }
@@ -50,13 +48,13 @@ pub enum WeaponID {
 }
 
 pub struct Weapon {
-    pub recoil_pattern: Vec<Vec2<f32>>,
+    pub recoil_pattern: Vec<Vec2<f64>>,
     pub delay: Duration,
     pub weapon_id: WeaponID,
 }
 
 impl Weapon {
-    pub const fn new(recoil_pattern: Vec<Vec2<f32>>, delay: Duration, id: WeaponID) -> Self {
+    pub const fn new(recoil_pattern: Vec<Vec2<f64>>, delay: Duration, id: WeaponID) -> Self {
         Self {
             recoil_pattern,
             delay,
@@ -65,26 +63,18 @@ impl Weapon {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Settings {
-    pub sensitivity: f32,
+    pub sensitivity: f64,
     pub weapon: WeaponID,
     pub sight: SightID,
     pub barrel: BarrelID,
 }
 
 impl Settings {
-    pub const fn new(sens: f32, wep: WeaponID, sig: SightID, bar: BarrelID) -> Self {
-        Self {
-            sensitivity: sens,
-            weapon: wep,
-            sight: sig,
-            barrel: bar,
-        }
-    }
-
     pub const fn default() -> Self {
         Self {
-            sensitivity: 0.3f32,
+            sensitivity: 0.3f64,
             weapon: WeaponID::Ak47,
             sight: SightID::Holo,
             barrel: BarrelID::None,

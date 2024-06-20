@@ -1,15 +1,16 @@
-use crate::config::Weapons;
-use crate::{
-    config::Settings,
-    mouse::{move_to, Vec2},
-};
+use std::time::SystemTime;
+use std::{sync::mpsc::Receiver, thread, time::Duration};
+
 use windows_sys::Win32::System::Diagnostics::Debug::Beep;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
     GetAsyncKeyState, VK_C, VK_CONTROL, VK_LBUTTON, VK_RBUTTON,
 };
 
-use std::time::SystemTime;
-use std::{sync::mpsc::Receiver, thread, time::Duration};
+use crate::config::Weapons;
+use crate::{
+    config::Settings,
+    mouse::{move_to, Vec2},
+};
 
 pub fn init(rx: Receiver<Settings>) {
     thread::spawn(move || {
@@ -23,10 +24,10 @@ pub fn init(rx: Receiver<Settings>) {
             unsafe {
                 if GetAsyncKeyState(VK_C.into()) != 0
                     && SystemTime::now()
-                        .duration_since(last_press)
-                        .unwrap()
-                        .as_millis()
-                        > Duration::from_millis(250).as_millis()
+                    .duration_since(last_press)
+                    .unwrap()
+                    .as_millis()
+                    > Duration::from_millis(250).as_millis()
                 {
                     Beep(1000, 100);
                     enabled = !enabled;
@@ -44,8 +45,8 @@ pub fn init(rx: Receiver<Settings>) {
             }
 
             let acceleration = Vec2::new(vec![0.1, 0.75, 1.0], vec![0.1, 0.75, 1.0]);
-            let sensitivity_multipler =
-                (settings.sensitivity / 10f32 * 2f32) * 3f32 * (90f32 / 100f32);
+            let sensitivity_multiplier =
+                (settings.sensitivity / 10f64 * 2f64) * 3f64 * (90f64 / 100f64);
             'inner: for delta in current_weapon.recoil_pattern.iter() {
                 unsafe {
                     if GetAsyncKeyState(VK_LBUTTON.into()) == 0 || !enabled {
@@ -56,15 +57,15 @@ pub fn init(rx: Receiver<Settings>) {
                 let barrel_multiplier = settings.barrel.get_modifier();
                 let mut sight_multiplier = settings.sight.get_modifier();
                 let stand_multiplier = if unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0 {
-                    1f32
+                    1f64
                 } else {
-                    2f32
+                    2f64
                 };
                 let hip_modifier = if unsafe { GetAsyncKeyState(VK_RBUTTON.into()) != 0 } {
-                    1f32
+                    1f64
                 } else {
-                    sight_multiplier = 1f32;
-                    0.8f32
+                    sight_multiplier = 1f64;
+                    0.8f64
                 };
 
                 move_to(
@@ -74,13 +75,13 @@ pub fn init(rx: Receiver<Settings>) {
                             * barrel_multiplier
                             * stand_multiplier
                             * hip_modifier
-                            / (-0.3 * sensitivity_multipler)),
+                            / (-0.3 * sensitivity_multiplier)),
                         -(delta.y
                             * sight_multiplier
                             * barrel_multiplier
                             * stand_multiplier
                             * hip_modifier
-                            / (-0.3 * sensitivity_multipler)),
+                            / (-0.3 * sensitivity_multiplier)),
                     ),
                     &acceleration,
                     &current_weapon.delay,

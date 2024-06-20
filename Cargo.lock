@@ -1140,6 +1140,7 @@ dependencies = [
  "eframe",
  "enigo",
  "num-integer",
+ "rayon",
  "tts_rust",
  "windows-sys 0.52.0",
 ]

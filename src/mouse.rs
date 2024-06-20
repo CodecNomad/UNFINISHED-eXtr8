@@ -1,6 +1,8 @@
+use std::time::{Duration, SystemTime};
+
 use enigo::{Coordinate, Enigo, Mouse, Settings};
 use num_integer::binomial;
-use std::time::{Duration, SystemTime};
+use rayon::prelude::*;
 
 pub struct Vec2<T> {
     pub x: T,
@@ -13,26 +15,23 @@ impl<T> Vec2<T> {
     }
 }
 
-fn calculate_recursive_bezier(control_points: &[f32], time: &f32) -> f32 {
+fn calculate_recursive_bezier(control_points: &[f64], time: &f64) -> f64 {
     let size = control_points.len();
-    let mut x = 0f32;
-    let delta_time = 1f32 - time;
+    let delta_time = 1f64 - time;
 
-    for i in control_points.iter().enumerate() {
-        let binom = binomial(size - 1, i.0);
-        let term = binom as f32 * delta_time.powi((size - 1 - i.0) as i32) * time.powi(i.0 as i32);
-        x += term * i.1;
-    }
-
-    x
+    control_points.par_iter().enumerate().map(|(i, val)| {
+        let binom = binomial(size - 1, i);
+        let term = binom as f64 * delta_time.powi((size - 1 - i) as i32) * time.powi(i as i32);
+        term * val
+    }).sum()
 }
 
-pub fn move_to(delta: &Vec2<f32>, control_points: &Vec2<Vec<f32>>, duration: &Duration) {
+pub fn move_to(delta: &Vec2<f64>, control_points: &Vec2<Vec<f64>>, duration: &Duration) {
     let mut enigo = Enigo::new(&Settings::default()).unwrap();
     let start = SystemTime::now();
     let start_location = enigo.location().unwrap();
-    let mut previous_location = Vec2::new(start_location.0 as f32, start_location.1 as f32);
-    let mut pixel_loss = Vec2::new(0f32, 0f32);
+    let mut previous_location = Vec2::new(start_location.0 as f64, start_location.1 as f64);
+    let mut pixel_loss = Vec2::new(0.0, 0.0);
 
     loop {
         let elapsed_time = start.elapsed().unwrap().as_millis();
@@ -45,12 +44,12 @@ pub fn move_to(delta: &Vec2<f32>, control_points: &Vec2<Vec<f32>>, duration: &Du
             break;
         }
 
-        let time_percent = elapsed_time as f32 / duration.as_millis() as f32;
+        let time_percent = elapsed_time as f64 / duration.as_millis() as f64;
 
         let absolute_location = Vec2::new(
-            start_location.0 as f32
+            start_location.0 as f64
                 + delta.x * calculate_recursive_bezier(&control_points.x, &(time_percent)),
-            start_location.1 as f32
+            start_location.1 as f64
                 + delta.y * calculate_recursive_bezier(&control_points.y, &(time_percent)),
         );
 

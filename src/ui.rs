@@ -1,3 +1,4 @@
+use std::process::exit;
 use std::sync::mpsc::Sender;
 
 use eframe::egui::{self};
@@ -12,65 +13,62 @@ pub fn init(tx: Sender<Settings>) {
         ..Default::default()
     };
 
-    let mut sensitivity: f32 = 0.3f32;
-    let mut weapon: WeaponID = WeaponID::Ak47;
-    let mut sight: SightID = SightID::None;
-    let mut barrell: BarrelID = BarrelID::None;
-
+    let mut settings = Settings::default();
     eframe::run_simple_native("eXtr8", options, move |ctx, _frame| {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.horizontal_top(|ui| {
-                ui.heading("Sensitivity: ");
-                ui.add(egui::Slider::new(&mut sensitivity, 0.005f32..=5f32));
+            ui.heading("eXtr8 settings");
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ui.label("Sensitivity: ");
+                ui.add(egui::Slider::new(&mut settings.sensitivity, 0.05f64..=1f64));
             });
 
-            ui.horizontal_top(|ui| {
-                ui.heading("Weapon: ");
+            ui.horizontal(|ui| {
+                ui.label("Weapon: ");
                 egui::ComboBox::new("weapon_selector", "")
-                    .selected_text(format!("{:?}", &weapon))
+                    .selected_text(format!("{:?}", &settings.weapon))
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut weapon, WeaponID::M2, "M2");
-                        ui.selectable_value(&mut weapon, WeaponID::HmLmg, "HmLmg");
-                        ui.selectable_value(&mut weapon, WeaponID::Ak47, "Ak47");
-                        ui.selectable_value(&mut weapon, WeaponID::Lr300, "Lr300");
-                        ui.selectable_value(&mut weapon, WeaponID::Mp5, "Mp5");
-                        ui.selectable_value(&mut weapon, WeaponID::Thompson, "Thompson");
-                        ui.selectable_value(&mut weapon, WeaponID::Custom, "Custom");
-                        ui.selectable_value(&mut weapon, WeaponID::Semi, "Semi");
-                        ui.selectable_value(&mut weapon, WeaponID::Python, "Python");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::M2, "M2");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::HmLmg, "HmLmg");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Ak47, "Ak47");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Lr300, "Lr300");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Mp5, "Mp5");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Thompson, "Thompson");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Custom, "Custom");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Semi, "Semi");
+                        ui.selectable_value(&mut settings.weapon, WeaponID::Python, "Python");
                     });
             });
 
-            ui.horizontal_top(|ui| {
-                ui.heading("Sight: ");
+            ui.horizontal(|ui| {
+                ui.label("Sight: ");
                 egui::ComboBox::new("sight_selector", "")
-                    .selected_text(format!("{:?}", &sight))
+                    .selected_text(format!("{:?}", &settings.sight))
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut sight, SightID::None, "None");
-                        ui.selectable_value(&mut sight, SightID::Handmade, "Handmade");
-                        ui.selectable_value(&mut sight, SightID::Holo, "Holo");
-                        ui.selectable_value(&mut sight, SightID::X8, "X8");
+                        ui.selectable_value(&mut settings.sight, SightID::None, "None");
+                        ui.selectable_value(&mut settings.sight, SightID::Handmade, "Handmade");
+                        ui.selectable_value(&mut settings.sight, SightID::Holo, "Holo");
                     });
             });
 
-            ui.horizontal_top(|ui| {
-                ui.heading("Barrell: ");
-                egui::ComboBox::new("barrell_selector", "")
-                    .selected_text(format!("{:?}", &barrell))
+            ui.horizontal(|ui| {
+                ui.label("Barrel: ");
+                egui::ComboBox::new("barrel_selector", "")
+                    .selected_text(format!("{:?}", &settings.barrel))
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut barrell, BarrelID::None, "None");
-                        ui.selectable_value(&mut barrell, BarrelID::Silencer, "Silencer");
+                        ui.selectable_value(&mut settings.barrel, BarrelID::None, "None");
+                        ui.selectable_value(&mut settings.barrel, BarrelID::Silencer, "Silencer");
                     });
             });
 
-            ui.horizontal_top(|ui| {
+            ui.horizontal(|ui| {
                 if ui.add(egui::Button::new("Update settings")).clicked() {
-                    tx.send(Settings::new(sensitivity, weapon, sight, barrell))
-                        .unwrap();
+                    tx.send(settings).unwrap();
                 }
 
                 if ui.add(egui::Button::new("Exit")).clicked() {
-                    panic!("User exit");
+                    exit(0);
                 }
             });
         });
