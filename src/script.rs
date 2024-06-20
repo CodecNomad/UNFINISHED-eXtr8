@@ -65,7 +65,7 @@ pub fn init(rx: Receiver<Settings>) {
                     1f64
                 } else {
                     sight_multiplier = 1f64;
-                    0.8f64
+                    current_weapon.ads_scale
                 };
 
                 move_to(

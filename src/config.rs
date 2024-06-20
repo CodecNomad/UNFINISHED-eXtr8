@@ -49,14 +49,18 @@ pub enum WeaponID {
 
 pub struct Weapon {
     pub recoil_pattern: Vec<Vec2<f64>>,
+    pub move_penalty: f64,
+    pub ads_scale: f64,
     pub delay: Duration,
     pub weapon_id: WeaponID,
 }
 
 impl Weapon {
-    pub const fn new(recoil_pattern: Vec<Vec2<f64>>, delay: Duration, id: WeaponID) -> Self {
+    pub const fn new(recoil_pattern: Vec<Vec2<f64>>, move_penalty: f64,  ads_scale: f64, delay: Duration, id: WeaponID) -> Self {
         Self {
             recoil_pattern,
+            move_penalty,
+            ads_scale,
             delay,
             weapon_id: id,
         }
@@ -122,6 +126,8 @@ impl Weapons {
                     Vec2::new(1.553878, -2.240047),
                     Vec2::new(1.553195, -2.248043),
                 ],
+                0.20000000298023224,
+                0.75,
                 Duration::from_micros(133330),
                 WeaponID::Ak47,
             ),
@@ -157,6 +163,8 @@ impl Weapons {
                     Vec2::new(0.266464, -1.993952),
                     Vec2::new(0.079090, -1.921165),
                 ],
+                0.20000000298023224,
+                0.75,
                 Duration::from_micros(120000),
                 WeaponID::Lr300,
             ),
@@ -251,6 +259,8 @@ impl Weapons {
                     Vec2::new(0.000000, -1.4900),
                     Vec2::new(0.000000, -1.4900),
                 ],
+                1.25,
+                0.5,
                 Duration::from_micros(100000),
                 WeaponID::M2,
             ),
@@ -314,6 +324,8 @@ impl Weapons {
                     Vec2::new(-0.730000, -1.4000),
                     Vec2::new(-0.730000, -1.4000),
                 ],
+                1.25,
+                0.5,
                 Duration::from_micros(100000),
                 WeaponID::HmLmg,
             ),
@@ -350,6 +362,8 @@ impl Weapons {
                     Vec2::new(-0.214510, -0.956648),
                     Vec2::new(0.034276, -0.095177),
                 ],
+                0.20000000298023224,
+                0.5,
                 Duration::from_micros(89000),
                 WeaponID::Mp5,
             ),
@@ -376,6 +390,8 @@ impl Weapons {
                     Vec2::new(0.042380, -0.647038),
                     Vec2::new(0.042380, -0.647038),
                 ],
+                0.20000000298023224,
+                0.5,
                 Duration::from_micros(113000),
                 WeaponID::Thompson,
             ),
@@ -405,16 +421,22 @@ impl Weapons {
                     Vec2::new(0.044076, -0.577694),
                     Vec2::new(-0.043187, -0.549581),
                 ],
+                0.20000000298023224,
+                0.5,
                 Duration::from_micros(90000),
                 WeaponID::Custom,
             ),
             Weapon::new(
                 vec![Vec2::new(0.0, -5.8)],
+                0.0,
+                0.5,
                 Duration::from_micros(125000),
                 WeaponID::Python,
             ),
             Weapon::new(
                 vec![Vec2::new(0.0, -1.4)],
+                0.5,
+                0.6000000238418579,
                 Duration::from_micros(175000),
                 WeaponID::Semi,
             ),

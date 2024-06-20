@@ -2,7 +2,6 @@ use std::time::{Duration, SystemTime};
 
 use enigo::{Coordinate, Enigo, Mouse, Settings};
 use num_integer::binomial;
-use rayon::prelude::*;
 
 pub struct Vec2<T> {
     pub x: T,
@@ -19,7 +18,7 @@ fn calculate_recursive_bezier(control_points: &[f64], time: &f64) -> f64 {
     let size = control_points.len();
     let delta_time = 1f64 - time;
 
-    control_points.par_iter().enumerate().map(|(i, val)| {
+    control_points.iter().enumerate().map(|(i, val)| {
         let binom = binomial(size - 1, i);
         let term = binom as f64 * delta_time.powi((size - 1 - i) as i32) * time.powi(i as i32);
         term * val
