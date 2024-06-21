@@ -78,6 +78,8 @@ pub fn init(rx: Receiver<Settings>) {
                 let mut max_speed = 1.7;
                 if is_aiming {
                     multiplier *= sight_multiplier;
+                } else {
+                    multiplier *= current_weapon.ads_scale;
                 }
 
                 multiplier *= barrel_multiplier;
