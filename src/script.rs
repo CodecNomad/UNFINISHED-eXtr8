@@ -20,14 +20,8 @@ pub fn init(rx: Receiver<Settings>) {
         let weapons = Weapons::get();
         let mut current_weapon = &weapons[0];
         let mut last_press = SystemTime::now();
-        let mut was_moving_up = false;
-        let mut was_moving_down = false;
-        let mut was_moving_left = false;
-        let mut was_moving_right = false;
-        let mut was_moving_up_time = SystemTime::now();
-        let mut was_moving_down_time = SystemTime::now();
-        let mut was_moving_left_time = SystemTime::now();
-        let mut was_moving_right_time = SystemTime::now();
+        let mut was_moving = false;
+        let mut start_of_move = SystemTime::now();
 
         loop {
             unsafe {
@@ -69,32 +63,16 @@ pub fn init(rx: Receiver<Settings>) {
 
                 let is_aiming = unsafe { GetAsyncKeyState(VK_RBUTTON.into()) != 0 };
                 let is_crouching = unsafe { GetAsyncKeyState(VK_CONTROL.into()) } != 0;
-                let is_moving_up = unsafe { GetAsyncKeyState(VK_W.into()) != 0 };
-                let is_moving_down = unsafe { GetAsyncKeyState(VK_S.into()) != 0 };
-                let is_moving_left = unsafe { GetAsyncKeyState(VK_A.into()) != 0 };
-                let is_moving_right = unsafe { GetAsyncKeyState(VK_D.into()) != 0 };
-                let is_moving = is_moving_up || is_moving_down || is_moving_left || is_moving_right;
+                let is_moving = unsafe { GetAsyncKeyState(VK_W.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_S.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_A.into()) != 0 }
+                    || unsafe { GetAsyncKeyState(VK_D.into()) != 0 };
 
-                if is_moving_up && !was_moving_up {
-                    was_moving_up_time = SystemTime::now()
+                if is_moving && was_moving == false {
+                    start_of_move = SystemTime::now()
                 }
 
-                if is_moving_down && !was_moving_down {
-                    was_moving_down_time = SystemTime::now()
-                }
-
-                if is_moving_right && !was_moving_right {
-                    was_moving_right_time = SystemTime::now()
-                }
-
-                if is_moving_left && !was_moving_left {
-                    was_moving_left_time = SystemTime::now()
-                }
-
-                was_moving_up = is_moving_up;
-                was_moving_down = is_moving_down;
-                was_moving_right = is_moving_right;
-                was_moving_left = is_moving_left;
+                was_moving = is_moving;
 
                 let mut multiplier = 1.0;
                 let mut max_speed = 1.7;
@@ -114,7 +92,7 @@ pub fn init(rx: Receiver<Settings>) {
                 if is_moving {
                     let vc = calculate_recursive_bezier(
                         &vec![0f64, max_speed],
-                        &(((was_moving_up_time.elapsed().unwrap().as_millis().abs_diff(was_moving_down_time.elapsed().unwrap().as_millis()) as f64 + (was_moving_left_time.elapsed().unwrap().as_millis().abs_diff(was_moving_right_time.elapsed().unwrap().as_millis())) as f64)).clamp(0.0, 1.0)),
+                        &((start_of_move.elapsed().unwrap().as_millis()) as f64),
                     );
                     let vt = (vc / 5.5f64).clamp(0.0, 1.0);
                     multiplier *= 1.0 + vt * movement_penalty;
