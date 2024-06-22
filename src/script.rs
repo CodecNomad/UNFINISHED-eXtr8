@@ -47,7 +47,7 @@ pub fn init(rx: Receiver<Settings>) {
                 });
             }
 
-            let acceleration = Vec2::new(vec![0.1, 0.75, 1.0], vec![0.1, 0.75, 1.0]);
+            let acceleration = Vec2::new(vec![0.0, 0.3, 1.0], vec![0.0, 0.7, 1.0]);
             let sensitivity_multiplier =
                 (settings.sensitivity / 10f64 * 2f64) * 3f64 * (90f64 / 100f64);
             'inner: for delta in current_weapon.recoil_pattern.iter() {
@@ -95,7 +95,7 @@ pub fn init(rx: Receiver<Settings>) {
                         &((start_of_move.elapsed().unwrap().as_millis()) as f64),
                     );
                     let vt = (vc / 5.5f64).clamp(0.0, 1.0);
-                    multiplier *= 1.0 + vt * movement_penalty;
+                    //multiplier *= 1.0 + vt * movement_penalty;
                 }
 
                 move_to(
